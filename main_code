@@ -1,0 +1,12 @@
+''' Vest Tracker
+Sean Gunther
+October 7, 2022 '''
+
+
+import cv2 #Open CV for visual identification
+import numpy as np # Dependent for openCV
+import datetime #generates time stamp for the video recorded
+
+timeStamp_fileName= 
+timeStamp_fileName.append(datetime.datetime.now())
+timeStamp_fileName.append(".mov")
