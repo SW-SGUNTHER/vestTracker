@@ -6,16 +6,9 @@ October 7, 2022 '''
 import cv2 #Open CV for visual identification
 import numpy as np # Dependent for openCV
 import datetime #generates time stamp for the video recorded
+import picamera as picam
 
-vidPath = "/home/vest-tracker/Desktop/Test code/" #init the file directory for raspberry pi 
-vidPath.append(datetime.datetime.now())#appends the datetime to make the files title
-vidPath.append(".mov") #appends the file type. should work, not sure 10/7/22 8:30am
-camera = cv2.VideoCaPTURE(vidPath)
-
-if not camera.isOpened():
-    camera.open(vidPath)
-
-
+camera = picam.PiCamera()
 kernel = np.ones((5,5), np.uint8) #not sure what this does, but the code i am refferencing says it is used for dilation
 
 #mask calibration values below
@@ -26,7 +19,7 @@ avg_HSV_max = [82,239,255] # avg values for 8 samples, stdDev = [8,34,0]
 
 
 while True:
-    ret, frame = camera.read() # reads single frame
+    ret, frame = camera.capture("cap.png") # reads single frame
     if not ret:
         break #if there is not a frame, break the loop
     hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #Converts the camera image into HSV
