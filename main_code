@@ -7,6 +7,35 @@ import cv2 #Open CV for visual identification
 import numpy as np # Dependent for openCV
 import datetime #generates time stamp for the video recorded
 
-timeStamp_fileName="/home/vest-tracker/Desktop/Test code/"
-timeStamp_fileName.append(datetime.datetime.now())
-timeStamp_fileName.append(".mov")
+vidPath = "/home/vest-tracker/Desktop/Test code/" #init the file directory for raspberry pi 
+vidPath.append(datetime.datetime.now())#appends the datetime to make the files title
+vidPath.append(".mov") #appends the file type. should work, not sure 10/7/22 8:30am
+camera = cv2.VideoCaPTURE(vidPath)
+
+if not camera.isOpened():
+    camera.open(vidPath)
+
+
+kernel = np.ones((5,5), np.uint8) #not sure what this does, but the code i am refferencing says it is used for dilation
+
+#mask calibration values below
+low_HSV_min = [40,0,93] # lowest values recorded in 8 samples 10/7/22, the low and high vals give the broadest range
+high_HSV_max = [95,255,255] #max values recorded in 8 samples 10/7/22
+avg_HSV_min = [46,97,142] #avg values for 8 samples, stdDev = [5,44,49]
+avg_HSV_max = [82,239,255] # avg values for 8 samples, stdDev = [8,34,0]
+
+
+while True:
+    ret, frame = camera.read() # reads single frame
+    if not ret:
+        break #if there is not a frame, break the loop
+    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #Converts the camera image into HSV
+    Mask = cv2.inRange(hsv_frame, avg_HSV_min, avg_HSV_max)
+    Mask = cv2.erode(Mask, kernel, iterations=1) # Im not sure i want to use this and the following two lines
+    Mask = cv2.morphologyEx(Mask, cv2.MORPH_OPEN, kernel) # these mask line sshould help with noise.
+    Mask = cv2.dilate(Mask, kernel, iterations=1)
+    Mask = cvs.bitwise_not(Mask) #inverts mask to mask the proper area
+    cv2.imshow('Mask', Mask)
+    key = cv2.waitkey(0)
+    if key == ord(' '):
+        break
