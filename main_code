@@ -1,35 +1,72 @@
+
 ''' Vest Tracker
 Sean Gunther
-October 7, 2022 '''
-# this code is very slow and the calibration values do not read accurately.
-# next step is to optimize openCV on raspberry pi
+October 14, 2022
+
+
+- In theory, this software identifies the centroid of the vest, but currently it thinks that everything not masked is the vest
+- very important to reduce the resolution of the capture from the raspicam
+- next steps are to build a housing and integrate motors
+- the calculations for dx and dy are not accurate, it sometimes disregards negative numbers.
+
+'''
+
 
 
 import cv2 #Open CV for visual identification
 import numpy as np # Dependent for openCV
-import datetime #generates time stamp for the video recorded
-import picamera as picam
-import time
+import picamera as picam  #necessary for running this software with the raspberry pi camera
+import time # used to determine the framerate
 
-camera = picam.PiCamera()
+camera = picam.PiCamera(resolution=(640,360)) # very important to limit the resolution at capture instead of with cv2.resize()
 
 #mask calibration values below
-#low_HSV_min = (40,0,93) # lowest values recorded in 8 samples 10/7/22, the low and high vals give the broadest range
-#high_HSV_max = (95,255,255) #max values recorded in 8 samples 10/7/22
-avg_HSV_min = (46,97,142) #avg values for 8 samples, stdDev = [5,44,49]
-avg_HSV_max = (82,239,255) # avg values for 8 samples, stdDev = [8,34,0]
+HSV_min = (26,0,250) #values used to identify the vest inside the office
+HSV_max = (179,85,255) #values used to identify the vest inside the office
 
 
+start_time = int(round(time.time()*1000)) #init for the starttime, disregard the first output
+ctr = 0 # init for the ctr
 while True:
-    frame = camera.capture("cap.png") # reads single frame
-    temp_frame = cv2.imread("/home/vest-tracker/Desktop/Testcode/cap.png")
-    hsv_frame = cv2.cvtColor(temp_frame, cv2.COLOR_BGR2HSV) #Converts the camera image into HSV
-    Mask = cv2.inRange(hsv_frame, avg_HSV_min, avg_HSV_max)
+    
+    camera.capture("cap.png") #creates a capture. each frame is saved as the same name
+    frame = cv2.imread("/home/pi/Desktop/cap.png") #reads the capture from the desktop.
+    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #Converts the camera image into HSV
+    Mask = cv2.inRange(hsv_frame, HSV_min, HSV_max) # generates the mask based on the hsv values from above
+    M = cv2.moments(Mask) #creates a moment, not really sure how this works but it is necessary for finding the centroid
+    cX = int(M["m10"] / M["m00"]) # develops the far left and right edges of the moment
+    cY = (M["m01"] / M["m00"]) # develops the far up and down edges of the moment
+    intCX = int(cX) # converts the values from array to int
+    intCY = int(cY)# converts the values from array to int
 
-    cv2.imshow('Mask', Mask)
-    key = cv2.waitKey(0)
+
+    cv2.imshow('Mask', Mask) #shows the mask
+    end_time = int(time.time()*1000) # time duration of calculations
+    delta_time = end_time-start_time # calculates the time it took from start to finish
+    
+    dx = 320-intCX # calculation for the difference between the center of the image and the centroid of the vest
+    dy = 180-intCY# calculation for the difference between the center of the image and the centroid of the vest 
+    
+    
+    # the if statements below are supposed to find whether the centroid is in a certain direction of the center, but doesnt work properly
+    if dx > 0:
+        print("move left by " + str(dx)+ " pixels")
+    elif dx < 0:
+        print("move right by " + str(dx)+ " pixels")
+    if dy > 0:
+        print("move down by " + str(dy)+ " pixels")
+    elif dy < 0:
+        print("move up by " + str(dy)+ " pixels")
+    
+    print(ctr,delta_time,cX,cY  ) # prints the various info
+    key = cv2.waitKey(0) # any key will close the window and continue, waits until key is pressed
     cv2.destroyAllWindows()
+    start_time = int(time.time()*1000)
+    ctr = ctr+1 # increments the counter
+   
+    
 
     
     
+
 
