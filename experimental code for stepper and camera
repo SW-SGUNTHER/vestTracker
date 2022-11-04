@@ -5,10 +5,9 @@ October 14, 2022
 
 
 - In theory, this software identifies the centroid of the vest, but currently it thinks that everything not masked is the vest
-- very important to reduce the resolution of the capture from the raspicam
-- next steps are to build a housing and integrate motors
+- the code will now turn the motor
 - the calculations for dx and dy are not accurate, it sometimes disregards negative numbers.
-
+- still need to develop housing and motor
 '''
 
 
@@ -17,7 +16,7 @@ import cv2 #Open CV for visual identification
 import numpy as np # Dependent for openCV
 import picamera as picam  #necessary for running this software with the raspberry pi camera
 import time # used to determine the framerate
-import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO #gpio library to utilize gpio pins on raspberry pi
 
 camera = picam.PiCamera(resolution=(640,360)) # very important to limit the resolution at capture instead of with cv2.resize()
 #mask calibration values below
