@@ -24,23 +24,23 @@ HSV_min = (26,0,250) #values used to identify the vest inside the office
 HSV_max = (179,85,255) #values used to identify the vest inside the office
 
 
-GPIO.setmode(GPIO.BOARD)
-control_pins = [3,5,7,11]
-for pin in control_pins:
-  GPIO.setup(pin, GPIO.OUT)
-  GPIO.output(pin, 0)
-halfstep_seq = [
-  [1,0,0,0],
-  [1,1,0,0],
-  [0,1,0,0],
-  [0,1,1,0],
-  [0,0,1,0],
-  [0,0,1,1],
-  [0,0,0,1],
-  [1,0,0,1]
+GPIO.setmode(GPIO.BOARD) # this describes the numbering system for the gpio pins. must be board for board locations
+control_pins = [3,5,7,11] # pins for the first servo
+for pin in control_pins: #iterates through the pins. this might be worth changing to make the code faster
+  GPIO.setup(pin, GPIO.OUT) #init the pin
+  GPIO.output(pin, 0)#set pin low
+halfstep_seq = [ # these are half step increments. it might be worth running them in full steps to increase speed.
+  [1,0,0,0], # step 0
+  [1,1,0,0], # step 1
+  [0,1,0,0], # step 2
+  [0,1,1,0], # step 3
+  [0,0,1,0], # step 4
+  [0,0,1,1], # step 5
+  [0,0,0,1], # step 6
+  [1,0,0,1]  # step 7
 ]
 
-revHalfstep_seq = [
+revHalfstep_seq = [ # these are the steps in reverse so that it can turn counter clockwise.
     [1,0,0,0],
     [1,0,0,1],
     [0,0,0,1],
